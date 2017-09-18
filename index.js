@@ -80,8 +80,8 @@ function upload(data) {
 			} else {
 				let json;
 				parseXML(body, (err, result) => {
-					if(error) {
-						throw error;
+					if(err) {
+						throw err;
 					}	else {
 						let imageURL = result.entry.content[0].$.src;
 						resolve(imageURL.replace('slack_uploaded_image', 's10000/slack_uploaded_image'));
