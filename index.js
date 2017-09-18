@@ -83,7 +83,6 @@ function upload(data) {
 					if(error) {
 						throw error;
 					}	else {
-						console.log(result);
 						let imageURL = result.entry.content[0].$.src;
 						resolve(imageURL.replace('slack_uploaded_image', 's10000/slack_uploaded_image'));
 					}
@@ -137,7 +136,6 @@ function uploadPaperDocument(response) {
       if(error) {
         reject(error);
 			} else {
-				console.log(response);
 				resolve(body);
 			}
     })
