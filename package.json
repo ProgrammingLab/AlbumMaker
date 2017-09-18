@@ -1,0 +1,23 @@
+{
+  "name": "albummaker",
+  "version": "0.0.1",
+  "description": "Slack に写真を上げると Dropbox Paper にも上がるみたいなのをやりたい",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ProgrammingLab/AlbumMaker.git"
+  },
+  "author": "Daisuke Yamamura",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ProgrammingLab/AlbumMaker/issues"
+  },
+  "homepage": "https://github.com/ProgrammingLab/AlbumMaker#readme",
+  "dependencies": {
+    "botkit": "^0.6.0",
+    "xml2js": "^0.4.19"
+  }
+}
