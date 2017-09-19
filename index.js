@@ -16,11 +16,6 @@ const controller = Botkit.slackbot( {
     debug: false
 });
 
-let fileName;
-let fileComment;
-let fileType;
-let fileUploadUser;
-
 let entryQueue = [];
 
 controller.spawn({
@@ -28,15 +23,6 @@ controller.spawn({
 }).startRTM();
 
 controller.on('file_share', function(bot, message) {
-  const fileURL = message.file.url_private_download;
-	fileName = message.file.title;
-
-	if(message.file.initial_comment) fileComment = ' / ' + message.file.initial_comment.comment;
-	else fileComment = '';
-
-	fileUploadUser = message.username;
-	fileType = message.file.mimetype;
-
   const now = new Date();
   const diff = now.getTime() - latestDate.getTime();
   if((diff / (1000 * 60 * 60)) > 30) {
@@ -44,15 +30,31 @@ controller.on('file_share', function(bot, message) {
     latestDate = new Date();
   }
 
-  download(fileURL, process.env.slack_token)
-    .then(upload)
-    .then(enqueue)
+  let commentMessage;
+
+  if(message.file.initial_comment) commentMessage = message.file.title + ' / ' + message.file.initial_comment.comment;
+  else commentMessage = message.file.title;
+
+  download(message.file.url_private_download, process.env.slack_token)
+    .then((data) => {
+      return upload(data, message.file.mimetype);
+    })
+    .then((url) => {
+      enqueue(
+        url,
+        message.file.mimetype,
+        commentMessage,
+        message.username);
+    })
     .then(() => {
       if(!paperProcessRunning) {
         paperProcessRunning = true;
         paperDocumentProcess();
       }
-    });
+    })
+    .catch((error) => {
+      console.log(error);
+    })
 });
 
 function getAccessToken() {
@@ -95,7 +97,7 @@ function download(url, token) {
 }
 
 // Google Photo にアップロードする
-function upload(data) {
+function upload(data, fileType) {
   return new Promise(function(resolve, reject) {
     let endPoint = 'https://picasaweb.google.com/data/feed/api/user/' + googlePhotoUserName + '/albumid/' + googlePhotoAlbumID;
     request({
@@ -125,8 +127,13 @@ function upload(data) {
   })
 }
 
-function enqueue(url) {
-  entryQueue.push(url);
+function enqueue(url, contentType, comment, userName) {
+  entryQueue.push({
+    'url': url,
+    'contentType': contentType,
+    'comment': comment,
+    'userName': userName });
+  console.log(entryQueue);
 }
 
 function downloadPaperDocument() {
@@ -155,8 +162,9 @@ function modifyPaperDocument(response) {
 
   response.entryCount = 0;
   response.modifiedDocument = response.body;
-  for(let URL of entryQueue) {
-    response.modifiedDocument = response.modifiedDocument + '![' + fileName + fileComment + ' from ' + fileUploadUser + '](' + URL + ')\n';
+
+  for(let entry of entryQueue) {
+    response.modifiedDocument = response.modifiedDocument + '![' + entry.comment + ' from ' + entry.userName + '](' + entry.url + ')\n';
     response.entryCount++;
   }
   response.modifiedDocument = response.modifiedDocument.replace('# Album', 'Album');
