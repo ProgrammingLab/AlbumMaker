@@ -13,13 +13,13 @@ const paperAccessToken = process.env.paper_access_token;
 const paperDocumentID = process.env.paper_document_id;
 
 const controller = Botkit.slackbot( {
-    debug: false
+  debug: false
 });
 
 let entryQueue = [];
 
 controller.spawn({
-    token: process.env.slack_token
+  token: process.env.slack_token
 }).startRTM();
 
 controller.on('file_share', function(bot, message) {
@@ -58,10 +58,10 @@ controller.on('file_share', function(bot, message) {
 });
 
 function getAccessToken() {
-	const result = execSync('sh ./get_access_token_by_refresh_token.sh').toString();
-	let json;	
-	eval('json = ' + result);
-	googlePhotoAccessToken = json.access_token;
+  const result = execSync('sh ./get_access_token_by_refresh_token.sh').toString();
+  let json;
+  eval('json = ' + result);
+  googlePhotoAccessToken = json.access_token;
 }
 
 function paperDocumentProcess() {
@@ -112,17 +112,17 @@ function upload(data, fileType) {
     }, function(error, response, body) {
       if(error) {
         reject(error);
-			} else {
-				let json;
-				parseXML(body, (err, result) => {
-					if(err) {
-						throw err;
-					}	else {
-						let imageURL = result.entry.content[0].$.src;
-						resolve(imageURL.replace('slack_uploaded_image', 's10000/slack_uploaded_image'));
-					}
-				});
-			}
+      } else {
+        let json;
+        parseXML(body, (err, result) => {
+          if(err) {
+            throw err;
+          } else {
+            let imageURL = result.entry.content[0].$.src;
+            resolve(imageURL.replace('slack_uploaded_image', 's10000/slack_uploaded_image'));
+          }
+        });
+      }
     })
   })
 }
@@ -141,24 +141,24 @@ function downloadPaperDocument() {
     request({
       method: 'get',
       url: 'https://api.dropboxapi.com/2/paper/docs/download',
-			headers: {
-				'Authorization': 'Bearer ' + paperAccessToken,
+      headers: {
+        'Authorization': 'Bearer ' + paperAccessToken,
         'Dropbox-API-Arg': '{"doc_id": "' + paperDocumentID +'", "export_format": "markdown"}'
-			}
-		}, function(error, response, body) {
-			if(error) {
-				reject(error);
-			} else {
-				resolve(response);
-			}
-		});
-	});
+      }
+    }, function(error, response, body) {
+      if(error) {
+        reject(error);
+      } else {
+        resolve(response);
+      }
+    });
+  });
 }
 
 function modifyPaperDocument(response) {
-	let temp;
-	eval('temp = ' + response.caseless.dict['dropbox-api-result']);
-	response.revision = temp.revision;
+  let temp;
+  eval('temp = ' + response.caseless.dict['dropbox-api-result']);
+  response.revision = temp.revision;
 
   response.entryCount = 0;
   response.modifiedDocument = response.body;
@@ -179,15 +179,15 @@ function uploadPaperDocument(response) {
       body: response.modifiedDocument,
       headers: {
         "Content-Type": "application/octet-stream",
-				'Authorization': 'Bearer ' + paperAccessToken,
+        'Authorization': 'Bearer ' + paperAccessToken,
         'Dropbox-API-Arg': '{"doc_id": "' + paperDocumentID + '", "doc_update_policy": "overwrite_all", "revision": ' + response.revision + ', "import_format": "markdown"}'
       },
     }, function(error, res, body) {
       if(error) {
         reject(error);
-			} else {
-				resolve(response);
-			}
+      } else {
+        resolve(response);
+      }
     })
   })
 }
