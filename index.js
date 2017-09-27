@@ -25,7 +25,7 @@ controller.spawn({
 controller.on('file_share', function(bot, message) {
   const now = new Date();
   const diff = now.getTime() - latestDate.getTime();
-  if((diff / (1000 * 60 * 60)) > 30) {
+  if((diff / (1000 * 60)) > 30) {
     getAccessToken();
     latestDate = new Date();
   }
