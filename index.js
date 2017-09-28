@@ -23,38 +23,45 @@ controller.spawn({
 }).startRTM();
 
 controller.on('file_share', function(bot, message) {
-  const now = new Date();
-  const diff = now.getTime() - latestDate.getTime();
-  if((diff / (1000 * 60)) > 30) {
-    getAccessToken();
-    latestDate = new Date();
+  if( message.file.mimetype === 'image/jpeg' ||
+      message.file.mimetype === 'image/png' ||
+      message.file.mimetype === 'image/gif') {
+    const now = new Date();
+    const diff = now.getTime() - latestDate.getTime();
+    if((diff / (1000 * 60)) > 30) {
+      getAccessToken();
+      latestDate = new Date();
+    }
+
+    let commentMessage;
+
+    if(message.file.initial_comment) commentMessage = message.file.title + ' / ' + message.file.initial_comment.comment;
+    else commentMessage = message.file.title;
+
+    download(message.file.url_private_download, process.env.slack_token)
+      .then((data) => {
+        return upload(data, message.file.mimetype);
+      })
+      .then((url) => {
+        enqueue(
+          url,
+          message.file.mimetype,
+          commentMessage,
+          message.username);
+      })
+      .then(() => {
+        if(!paperProcessRunning) {
+          paperProcessRunning = true;
+          paperDocumentProcess();
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      })
   }
-
-  let commentMessage;
-
-  if(message.file.initial_comment) commentMessage = message.file.title + ' / ' + message.file.initial_comment.comment;
-  else commentMessage = message.file.title;
-
-  download(message.file.url_private_download, process.env.slack_token)
-    .then((data) => {
-      return upload(data, message.file.mimetype);
-    })
-    .then((url) => {
-      enqueue(
-        url,
-        message.file.mimetype,
-        commentMessage,
-        message.username);
-    })
-    .then(() => {
-      if(!paperProcessRunning) {
-        paperProcessRunning = true;
-        paperDocumentProcess();
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    })
+  else {
+    console.log('File mimetype : ' + message.file.mimetype + ' is not supported.');
+  }
 });
 
 function getAccessToken() {
