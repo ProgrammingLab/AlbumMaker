@@ -1,6 +1,6 @@
 # AlbumMaker
-Slack に写真を上げると、そっから Google Photo に上がって、その生の画像の URL を Dropbox Paper の対象のドキュメントに追記してくれる。
-jpeg、png、gif 等ならいけるっぽい。
+Slack に写真を上げると、そっから Google Photo に上がって、その生の画像の URL を Dropbox Paper のドキュメントに追記する。
+JPEG, PNG, GIF のみ対応。それ以外は無視。
 
 ## 動作要件
 中から sh と curl を呼び出してるので、この2つが無いと動かない
@@ -10,6 +10,4 @@ jpeg、png、gif 等ならいけるっぽい。
 2. 動く
 
 ## 現時点での注意
-- 動画を上げると死ぬ
 - Paper 内の対象のドキュメントが編集され続けている状態で動作すると動作結果が反映されない
-- 稀に Google Photo API 周りで死ぬ
